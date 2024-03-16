@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 #The engine allows communication to database through SQLAlchemy
 #https://docs.sqlalchemy.org/en/14/core/engines.html
 
-engine = create_engine("sqlite:///database/personas.db")
+engine = create_engine("sqlite:///database/people.db")
 
 #creating session, This session allows us to create transactions(Operations) inside DB
 Session = sessionmaker(bind=engine)
