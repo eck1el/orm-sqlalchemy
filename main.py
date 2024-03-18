@@ -2,6 +2,9 @@ import sys
 
 import db
 from models import Person
+from sqlalchemy import and_, or_, text
+
+
 def addInitPerson():
     p1 = Person("Daniel", 20)
     p2 = Person("Alex", 31)
@@ -16,7 +19,57 @@ def addInitPerson():
     db.session.commit()
     db.session.close()
 def testquery():
-    pass
+    print("\n #1 Get an object by Id(its primary key) if it does not exist I will get NONE")
+    #result = db.session.query(Person).get(id) Deprecated version
+    result = db.session.get(Person, 3)
+    print(result)
+    print(type(result))
+    print(result.name)
+
+    print("\n #2 Get all the objects from a table")
+    result = db.session.query(Person).all()
+    for p in result:
+        print("\t > Id: {} -> Name: {} -> Age: {}".format(p.id_person, p.name, p.age))
+
+    print("\n #3 Get the first object in a query(oldest)")
+    result = db.session.query(Person).first()
+    print(result)
+
+    print("\n #4 Get the number of elements in a table")
+    result = db.session.query(Person).count()
+    print(result)
+
+    print("\n #5 Sort results in a query")
+    result = db.session.query(Person).order_by("name").all()
+    for p in result:
+        print("\t > Id: {} -> Name: {} -> Age: {}".format(p.id_person, p.name, p.age))
+
+    print("\n #6 Sort results and show the first three")
+    result = db.session.query(Person).order_by("name").limit(3)
+    for p in result:
+        print("\t > Id: {} -> Name: {} -> Age: {}".format(p.id_person, p.name, p.age))
+
+    print("\n #7 applying ilike filter")
+    result = db.session.query(Person).filter(Person.name.ilike("Ma%")).all()
+    for p in result:
+        print("\t > Id: {} -> Name: {} -> Age: {}".format(p.id_person, p.name, p.age))
+
+    print("\n #8 applying in_ filter")
+    result = db.session.query(Person).filter(Person.id_person.in_([1, 2, 6])).all()
+    for p in result:
+        print("\t > Id: {} -> Name: {} -> Age: {}".format(p.id_person, p.name, p.age))
+
+    print("\n #9 applying and_ filter")
+    c1 = Person.id_person > 4
+    c2 = Person.name.ilike("M%")
+    result = db.session.query(Person).filter(and_(c1, c2)).all()
+    for p in result:
+        print("\t > Id: {} -> Name: {} -> Age: {}".format(p.id_person, p.name, p.age))
+
+    print("\n #10 Run explicit sql queries")
+    result = db.session.query(Person).from_statement(text("SELECT * FROM person")).all()
+    for p in result:
+        print("\t > Id: {} -> Name: {} -> Age: {}".format(p.id_person, p.name, p.age))
 def addNewPerson():
     print("\n > Adding person")
     name = input("Please enter person's name: ")
@@ -27,9 +80,32 @@ def addNewPerson():
     db.session.close()
 
 def updatePerson():
-    pass
+    print("\n > Update people")
+    showPeople()
+    person_id = int(input("please input person's ID: "))
+    person = db.session.query(Person).filter(Person.id_person == person_id).first()
+
+    if person is None:
+        print("This person does not exist")
+    else:
+        new_age = int(input("Please Enter new age: "))
+        person.age = new_age
+        db.session.commit()
+        db.session.close()
+        print("The person has been updated")
 def deletePerson():
-    pass
+    print("\n > Delete people")
+    showPeople()
+    person_id = int(input("please input person's ID: "))
+    person = db.session.query(Person).filter(Person.id_person == person_id).first()
+
+    if person is None:
+        print("This person does not exist")
+    else:
+        db.session.delete(person)
+        db.session.commit()
+        db.session.close()
+        print("The person has been updated")
 def showPeople():
     people = db.session.query(Person).all()
     for p in people:
